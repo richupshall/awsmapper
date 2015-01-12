@@ -1,0 +1,7 @@
+.instance{
+	display: block;
+	float: left;
+	width: 20%;
+	border: 5px solid black;
+	color: yellow;
+}
