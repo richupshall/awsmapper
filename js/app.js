@@ -1,7 +1,8 @@
 var debug,
 instances,
 subnet,
-volumes;
+volumes,
+snapshots;
 
 var today = new Date();
 var yesterday = new Date();
@@ -14,13 +15,17 @@ lastYear.setYear(lastYear.getYear() - 1);
 jQuery( document ).ready(function() {
 	
 	var SortByIP = function (a, b){
-		var aName = a.Instances[0].PrivateIpAddress;
-		var bName = b.Instances[0].PrivateIpAddress;
-		return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+		aa = a.Instances[0].PrivateIpAddress.split(".");
+		bb = b.Instances[0].PrivateIpAddress.split(".");
+	
+        var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
+        var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
+	
+		return resulta-resultb;
 	};
 
 	var loadVPCs = function(region){
-		jQuery("body").html("<h1>VPCS</h1><select id='regionSelect' disabled><option value='us-east-1'>US East (N. Virginia)</option><option value='us-west-2'>US West (Oregon)</option><option value='us-west-1'>US West (N. California)</option><option value='eu-west-1'>EU (Ireland)</option><option value='eu-central-1'>EU (Frankfurt)</option><option value='ap-southeast-1'>Asia Pacific (Singapore)</option><option value='ap-northeast-1'>Asia Pacific (Tokyo)</option><option value='ap-southeast-2'>Asia Pacific (Sydney)</option><option value='sa-east-1'>South America (Sao Paulo)</option></select><div id='main'></div>");
+		jQuery("body").html("<h1>VPCS</h1><select id='regionSelect' disabled><option value='us-east-1'>US East (N. Virginia)</option><option value='us-west-2'>US West (Oregon)</option><option value='us-west-1'>US West (N. California)</option><option value='eu-west-1'>EU (Ireland)</option><option value='eu-central-1'>EU (Frankfurt)</option><option value='ap-southeast-1'>Asia Pacific (Singapore)</option><option value='ap-northeast-1'>Asia Pacific (Tokyo)</option><option value='ap-southeast-2'>Asia Pacific (Sydney)</option><option value='sa-east-1'>South America (Sao Paulo)</option></select><div id='main'></div><div id='lightbox'></div>");
 		jQuery("#regionSelect").attr("disabled","disabled").val(region);
 		jQuery.post( "/getvpcs/", {"region":region})
 			.done(function(data) {
@@ -34,7 +39,7 @@ jQuery( document ).ready(function() {
 		jQuery.post( "/getvpc/")
 			.done(function(data) {
 				subnets = jQuery.parseJSON(data);
-				renderSubnets(jQuery.parseJSON(data));
+				renderSubnets(subnets);
 				loadInstances();
 			});
 	};
@@ -43,7 +48,7 @@ jQuery( document ).ready(function() {
 		jQuery.post( "/getsubnet/")
 			.done(function(data) {
 				instances = jQuery.parseJSON(data);
-				renderInstances(jQuery.parseJSON(data));
+				renderInstances(instances);
 				loadVolumes();
 			});
 	};
@@ -52,7 +57,7 @@ jQuery( document ).ready(function() {
 		jQuery.post( "/getvolumes/")
 			.done(function(data) {
 				volumes = jQuery.parseJSON(data);
-				renderVolumes(jQuery.parseJSON(data));
+				renderVolumes(volumes);
 				loadSnapshots();
 			});
 	};
@@ -60,8 +65,8 @@ jQuery( document ).ready(function() {
 	var loadSnapshots = function(){
 		jQuery.post( "/getsnapshots/")
 			.done(function(data) {
-				volumes = jQuery.parseJSON(data);
-				renderSnapshots(jQuery.parseJSON(data));
+				snapshots = jQuery.parseJSON(data);
+				renderSnapshots(snapshots);
 			});
 	};
 	
@@ -95,7 +100,15 @@ jQuery( document ).ready(function() {
 					name = instance.Tags[tag].Value;
 				}
 			}
-			html = "<div class='instance " + instance.State.Name + "' rel='" + instance.InstanceId + "'><h3>" + name + "<span>"+ instance.PrivateIpAddress +"</span></h3><p>" + instance.InstanceType + "</p></div>";
+			html = "<div class='instance " + instance.State.Name + "' rel='" + instance.InstanceId + "'><h3>" + name + "<span>"+ instance.PrivateIpAddress +"</span></h3><p>" + instance.InstanceType + "</p>";
+
+			html+="<table class='tags'>";
+			jQuery(instance.Tags).each(function(){
+				html+="<tr><td class='key'>" + this.Key + ":</td><td>" + this.Value + "</td></tr>";
+			});
+			html+="</table>";
+
+			html+="<div class='volumes'></div></div>";
 
 			SubnetId = instance.SubnetId;
 
@@ -112,7 +125,7 @@ jQuery( document ).ready(function() {
 	var renderVolumes = function(data) {
 		var html, attachedInstance;
 		jQuery(volumes.Volumes).each(function(){
-			html = "<div class='volume' rel="+this.VolumeId+">" + this.Size + "</div>";
+			html = "<div class='volume' rel="+this.VolumeId+" data-featherlight='#lightbox'>" + this.Size + "</div>";
 			if (this.Attachments[0]) {
 				attachedInstance = this.Attachments[0].InstanceId;
 			} else{
@@ -120,7 +133,7 @@ jQuery( document ).ready(function() {
 			}
 
 			if(jQuery("div[rel="+attachedInstance+"]").length!==0){
-				jQuery("div[rel="+attachedInstance+"]").append(html);
+				jQuery("div[rel="+attachedInstance+"] > div.volumes").append(html);
 			} else {
 				jQuery("div#lostAndFound").append(html);
 			}
@@ -166,6 +179,28 @@ jQuery( document ).ready(function() {
 		jQuery("#regionSelect").removeAttr("disabled");
 	};
 	//renderVPC(jQuery.parseJSON(json));
+	jQuery("head").append('<link rel="stylesheet" type="text/css" href="/css/main.css"><link rel="stylesheet" type="text/css" href="/css/featherlight.min.css">');
 	loadVPCs("us-east-1");
+
+	jQuery.featherlight.defaults.beforeOpen = function(el){
+		var html = "";
+		var selectedVolume = $.grep(volumes.Volumes, function(e){ return e.VolumeId == $(el.currentTarget).attr("rel"); })[0];
+		var selectedVolumeSnapshots = $.grep(snapshots.Snapshots, function(e){ return e.VolumeId == $(el.currentTarget).attr("rel"); });
+
+		html+="<h1>"+selectedVolume.VolumeId+"</h1><p>This is a " +selectedVolume.Size+ "GB " +selectedVolume.VolumeType+ " volume.</p>";
+		//create snapshot table
+		html+="<h2>Snapshot List</h2><table><thead><tr><td>ID</td><td>Description</td><td>Date</td><td>Encrypted</td></tr></thead>";
+		jQuery(selectedVolumeSnapshots).each(function(){
+			html+="<tr>";
+			html+="<td>"+this.SnapshotId+"</td>";
+			html+="<td>"+this.Description+"</td>";
+			html+="<td>"+this.StartTime+"</td>";
+			html+="<td>"+this.Encrypted+"</td>";
+			html+="</tr>";
+		});
+		html+="</table>";
+
+		jQuery("#lightbox").html(html);
+	};
 
 });
