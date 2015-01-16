@@ -15,8 +15,17 @@ lastYear.setYear(lastYear.getYear() - 1);
 jQuery( document ).ready(function() {
 	
 	var SortByIP = function (a, b){
-		aa = a.Instances[0].PrivateIpAddress.split(".");
-		bb = b.Instances[0].PrivateIpAddress.split(".");
+		if(a.Instances[0].State.Name === "terminated"){
+			aa = 0;
+		} else {
+			aa = a.Instances[0].PrivateIpAddress.split(".");
+		}
+
+		if(b.Instances[0].State.Name === "terminated"){
+			bb = 0;
+		} else {
+			bb = b.Instances[0].PrivateIpAddress.split(".");
+		}
 	
         var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
         var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
