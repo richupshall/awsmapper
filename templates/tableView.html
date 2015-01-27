@@ -10,5 +10,27 @@
 		<link rel="stylesheet" type="text/css" href="/css/featherlight.min.css">
 	</head>
 	<body>
+		<h1>VPCS</h1>
+		<div id="nav">
+			<select id='regionSelect' disabled>
+				<option value='us-east-1'>US East (N. Virginia)</option>
+				<option value='us-west-2'>US West (Oregon)</option>
+				<option value='us-west-1'>US West (N. California)</option>
+				<option value='eu-west-1'>EU (Ireland)</option>
+				<option value='eu-central-1'>EU (Frankfurt)</option>
+				<option value='ap-southeast-1'>Asia Pacific (Singapore)</option>
+				<option value='ap-northeast-1'>Asia Pacific (Tokyo)</option>
+				<option value='ap-southeast-2'>Asia Pacific (Sydney)</option>
+				<option value='sa-east-1'>South America (Sao Paulo)</option>
+			</select>
+			<span id="refresh"><img src="/img/refresh.png" alt="Reload" title="Reload"/></span>
+		</div>
+		<div id='main'>
+		</div>
+		<div id='lostAndFound'>
+			<h2>Lost And Found</h2>
+			<table id="laftable"></table>
+		</div>
+		<div id='lightbox'></div>
 	</body>
 </html>

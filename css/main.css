@@ -2,6 +2,10 @@ fieldset{
 	background-color: #FFA500;
 }
 
+#refresh{
+	cursor: pointer;
+}
+
 .subnet {
 	border: 1px solid black;
 	background-color: white;

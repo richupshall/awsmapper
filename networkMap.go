@@ -118,6 +118,9 @@ func main() {
 	http.HandleFunc("/css/", func(w http.ResponseWriter, r *http.Request) {
 	    http.ServeFile(w, r, r.URL.Path[1:])
 	})
+	http.HandleFunc("/img/", func(w http.ResponseWriter, r *http.Request) {
+	    http.ServeFile(w, r, r.URL.Path[1:])
+	})
 
 	if *addr {
         l, err := net.Listen("tcp", "127.0.0.1:0")

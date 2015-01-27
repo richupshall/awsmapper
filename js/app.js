@@ -34,7 +34,9 @@ jQuery( document ).ready(function() {
 	};
 
 	var loadVPCs = function(region){
-		jQuery("body").html("<h1>VPCS</h1><select id='regionSelect' disabled><option value='us-east-1'>US East (N. Virginia)</option><option value='us-west-2'>US West (Oregon)</option><option value='us-west-1'>US West (N. California)</option><option value='eu-west-1'>EU (Ireland)</option><option value='eu-central-1'>EU (Frankfurt)</option><option value='ap-southeast-1'>Asia Pacific (Singapore)</option><option value='ap-northeast-1'>Asia Pacific (Tokyo)</option><option value='ap-southeast-2'>Asia Pacific (Sydney)</option><option value='sa-east-1'>South America (Sao Paulo)</option></select><div id='main'></div><div id='lightbox'></div>");
+		//jQuery("body").html("<h1>VPCS</h1><select id='regionSelect' disabled><option value='us-east-1'>US East (N. Virginia)</option><option value='us-west-2'>US West (Oregon)</option><option value='us-west-1'>US West (N. California)</option><option value='eu-west-1'>EU (Ireland)</option><option value='eu-central-1'>EU (Frankfurt)</option><option value='ap-southeast-1'>Asia Pacific (Singapore)</option><option value='ap-northeast-1'>Asia Pacific (Tokyo)</option><option value='ap-southeast-2'>Asia Pacific (Sydney)</option><option value='sa-east-1'>South America (Sao Paulo)</option></select><div id='main'></div><div id='lightbox'></div>");
+		jQuery("#main").html("");
+		jQuery("#laftable").html("");
 		jQuery("#regionSelect").attr("disabled","disabled").val(region);
 		jQuery.post( "/getvpcs/", {"region":region})
 			.done(function(data) {
@@ -83,11 +85,7 @@ jQuery( document ).ready(function() {
 		jQuery(data.Vpcs).each(function(){
 			jQuery("#main").append("<fieldset id=" + this.VpcId + "><legend class='vpcid'>" + this.VpcId + "</legend></fieldset>");
 		});
-		jQuery("#main").append("<div id='lostAndFound'><h2>Lost And Found</h2><table></table></div>");
-
-		jQuery("#regionSelect").on('change', function() {
-			loadVPCs(jQuery(this).val());
-		});
+		//jQuery("#main").append("<div id='lostAndFound'><h2>Lost And Found</h2><table></table></div>");
 	};
 
 	var renderSubnets = function(data){
@@ -211,5 +209,13 @@ jQuery( document ).ready(function() {
 
 		jQuery("#lightbox").html(html);
 	};
+
+	jQuery("#regionSelect").on('change', function() {
+		loadVPCs(jQuery(this).val());
+	});
+
+	jQuery("#refresh").click(function(){
+		loadVPCs(jQuery("#regionSelect").val());
+	});
 
 });
