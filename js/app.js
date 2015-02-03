@@ -192,15 +192,15 @@ jQuery( document ).ready(function() {
 	jQuery.featherlight.defaults.beforeOpen = function(el){
 		var html = "";
 		var selectedVolume = $.grep(volumes.Volumes, function(e){ return e.VolumeId == $(el.currentTarget).attr("rel"); })[0];
-		var selectedVolumeSnapshots = $.grep(snapshots.Snapshots, function(e){ return e.VolumeId == $(el.currentTarget).attr("rel"); });
+		var selectedVolumeSnapshots = $.grep(snapshots.Snapshots, function(e){ return e.VolumeId == $(el.currentTarget).attr("rel"); }).reverse();
 
-		html+="<h1>"+selectedVolume.VolumeId+"</h1><p>This is a " +selectedVolume.Size+ "GB " +selectedVolume.VolumeType+ " volume.</p>";
+		html+="<h1>"+ selectedVolume.Tags.filter(function (tag) { return tag.Key == "Name"; })[0].Value + " - " + selectedVolume.VolumeId+"</h1><p>This is a " +selectedVolume.Size+ "GB " +selectedVolume.VolumeType+ " volume.</p>";
 		//create snapshot table
-		html+="<h2>Snapshot List</h2><table><thead><tr><td>ID</td><td>Description</td><td>Date</td><td>Encrypted</td></tr></thead>";
+		html+="<h2>Snapshot List</h2><table><thead><tr><th>ID</th><th>Backup Type</th><th>Date</th><th>Encrypted</th></tr></thead>";
 		jQuery(selectedVolumeSnapshots).each(function(){
 			html+="<tr>";
 			html+="<td>"+this.SnapshotId+"</td>";
-			html+="<td>"+this.Description+"</td>";
+			html+="<td>"+this.Tags.filter(function (tag) { return tag.Key == "BackupType"; })[0].Value+"</td>";
 			html+="<td>"+this.StartTime+"</td>";
 			html+="<td>"+this.Encrypted+"</td>";
 			html+="</tr>";
