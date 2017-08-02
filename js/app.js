@@ -15,13 +15,13 @@ lastYear.setYear(lastYear.getYear() - 1);
 jQuery( document ).ready(function() {
 	
 	var SortByIP = function (a, b){
-		if(a.Instances[0].State.Name === "terminated"){
+		if(a.Instances[0].State.Name === "terminated" || a.Instances[0].State.Name === "stopped"){
 			aa = 0;
 		} else {
 			aa = a.Instances[0].PrivateIpAddress.split(".");
 		}
 
-		if(b.Instances[0].State.Name === "terminated"){
+		if(b.Instances[0].State.Name === "terminated" || b.Instances[0].State.Name === "stopped"){
 			bb = 0;
 		} else {
 			bb = b.Instances[0].PrivateIpAddress.split(".");
@@ -196,11 +196,10 @@ jQuery( document ).ready(function() {
 
 		html+="<h1>"+ selectedVolume.Tags.filter(function (tag) { return tag.Key == "Name"; })[0].Value + " - " + selectedVolume.VolumeId+"</h1><p>This is a " +selectedVolume.Size+ "GB " +selectedVolume.VolumeType+ " volume.</p>";
 		//create snapshot table
-		html+="<h2>Snapshot List</h2><table><thead><tr><th>ID</th><th>Backup Type</th><th>Date</th><th>Encrypted</th></tr></thead>";
+		html+="<h2>Snapshot List</h2><table><thead><tr><th>ID</th><th>Date</th><th>Encrypted</th></tr></thead>";
 		jQuery(selectedVolumeSnapshots).each(function(){
 			html+="<tr>";
 			html+="<td>"+this.SnapshotId+"</td>";
-			html+="<td>"+this.Tags.filter(function (tag) { return tag.Key == "BackupType"; })[0].Value+"</td>";
 			html+="<td>"+this.StartTime+"</td>";
 			html+="<td>"+this.Encrypted+"</td>";
 			html+="</tr>";
